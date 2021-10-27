@@ -1,20 +1,31 @@
-import { NgModule } from '@angular/core';
+import { NgModule, APP_INITIALIZER } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
-import { NZ_I18N } from 'ng-zorro-antd/i18n';
-import { en_US } from 'ng-zorro-antd/i18n';
-import { registerLocaleData } from '@angular/common';
-import en from '@angular/common/locales/en';
+
 import { FormsModule } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { IconsProviderModule } from './icons-provider.module';
 import { NzLayoutModule } from 'ng-zorro-antd/layout';
 import { NzMenuModule } from 'ng-zorro-antd/menu';
+import { StartupService } from './core/startup/startup.service';
+import { CoreModule } from './core/core.module';
 
-registerLocaleData(en);
+export function StartupServiceFactory(startupService: StartupService) {
+  return () => startupService.load();
+}
+// 初始化服务
+const APPINIT_PROVIDES = [
+  StartupService,
+  {
+    provide: APP_INITIALIZER,
+    useFactory: StartupServiceFactory,
+    deps: [StartupService],
+    multi: true,
+  }
+];
 
 @NgModule({
   declarations: [
@@ -22,15 +33,16 @@ registerLocaleData(en);
   ],
   imports: [
     BrowserModule,
-    AppRoutingModule,
+    BrowserAnimationsModule,
     FormsModule,
     HttpClientModule,
-    BrowserAnimationsModule,
-    IconsProviderModule,
-    NzLayoutModule,
-    NzMenuModule
+    // IconsProviderModule,
+    // NzLayoutModule,
+    // NzMenuModule,
+    CoreModule,
+    AppRoutingModule
   ],
-  providers: [{ provide: NZ_I18N, useValue: en_US }],
+  providers: [...APPINIT_PROVIDES],
   bootstrap: [AppComponent]
 })
 export class AppModule { }
